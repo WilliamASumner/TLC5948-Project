@@ -34,7 +34,7 @@ endif
 include $(ARDMK_DIR)/Common.mk
 
 ARDMK_VENDOR        = teensy
-ARDUINO_CORE_PATH   = $(ARDUINO_DIR)/hardware/teensy/avr/cores/teensy3
+ARDUINO_CORE_PATH   = $(ARDUINO_DIR)/hardware/teensy/avr/cores/teensy4
 BOARDS_TXT          = $(ARDUINO_DIR)/hardware/$(ARDMK_VENDOR)/avr/boards.txt
 
 
