@@ -1,4 +1,1 @@
-*.o
-build-cli
-/.project
-build-*
+.*.un~
