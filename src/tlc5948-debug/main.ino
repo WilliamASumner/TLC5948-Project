@@ -55,6 +55,7 @@ void setup() {
     tlc.printGsDataBuf();
 
     tlc.exchangeData(DataKind::gsdata);
+    delay(1000);
 
     tlc.updateDcData(Channels::all,0x7F); // all channels high
     Fctrls f = tlc.getFctrlBits()  & ~(Fctrls::blank_mask) & ~(Fctrls::tmgrst_mask); // clear blank and timing reset bits
@@ -83,8 +84,7 @@ void setup() {
 }
 
 
-// For writing to TLC5948
-inline void updateFromAD9833() {
+inline void funcToRun() {
     //tlc.updateGsData(Channels::all,0x8000); // 0x8000 -> AA54
     //tlc.updateGsData(Channels::all,0x00ff); // 0x00ff -> 0000 (all warnings except TEF)
     //.tlc.updateGsData(Channels::all,0x0100); // 0x0100 -> 5522 (all warnings except TEF)
@@ -97,7 +97,7 @@ inline void updateFromAD9833() {
     //digitalWrite(SSEL, LOW); // SSEL used for SPI with a slave select
     tlc.exchangeData(DataKind::gsdata);
     //digitalWrite(SSEL, HIGH);
-        // Pin 9 is PWM so ~490Hz -> 0.03469s or 34.69ms
+    // Pin 9 is PWM so ~490Hz -> 0.03469s or 34.69ms wait time required before retrieving Sid
 
     SidFlags flags = tlc.getSidData(old,lsd,lod,true);
     Serial.print("spi:\t");
@@ -119,17 +119,12 @@ inline void updateFromAD9833() {
 }
 
 
-inline void funcToRun() {
-    //AD.setFrequency(MD_AD9833::CHAN_0,480);
-    updateFromAD9833();
-}
-
 void loop() {
 #if DEBUG_TIMING
     unsigned long timeStart = micros();
 #endif
 
-    funcToRun();
+    //funcToRun();
 
 #if DEBUG_TIMING
     unsigned long runTime = micros() - timeStart;
