@@ -39,7 +39,9 @@ void setup() {
     Serial.begin(9600);
     TCCR0B = TCCR0B & B11111000 | B00000001; // Adjusting PWM frequency of Timer1 to 61Khz - Not sure how this works? 
 #endif
-    
+
+    TCCR1B = TCCR1B & B11111000 | B00000001; // increase PWM frequency to 31Khz, 490Hz may be too slow
+
     Serial.begin(9600);
 
     pinMode(ledPin,OUTPUT);
@@ -58,8 +60,7 @@ void setup() {
     delay(1000);
 
     tlc.updateDcData(Channels::all,0x7F); // all channels high
-    Fctrls f = tlc.getFctrlBits()  & ~(Fctrls::blank_mask) & ~(Fctrls::tmgrst_mask); // clear blank and timing reset bits
-    f |= Fctrls::tmgrst_mode_1; // enable timing reset (LAT rise means: zero GS counter and force off outputs)
+    Fctrls f = tlc.getFctrlBits()  & ~(Fctrls::blank_mask); // clear blank and timing reset bits
     tlc.updateFctrlData(f);
 
     Serial.print("Control data:\t");
