@@ -95,10 +95,10 @@ void Tlc5948::exchangeData(DataKind type) {
     }
     SPI.transfer(spiBuf,32);
     SPI.endTransaction();
-
     asm volatile("nop"); // give it a rest before we pulse high
-    asm volatile("nop"); // give it a rest before we pulse high
-    asm volatile("nop"); // give it a rest before we pulse high
+    asm volatile("nop");
+    asm volatile("nop");
+    asm volatile("nop");
     pulseLatch(); // latch in the new data
 }
 
