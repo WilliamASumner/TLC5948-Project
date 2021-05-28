@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Find the port the arduino is on
-SERIAL_DEV=`find /dev/ -name "*cu.usbserial*" | head -n1`
+SERIAL_DEV=`find /dev/ -name "*cu.usb*" | head -n1`
 
 if [ ! -z $SERIAL_DEV ]; then
     make upload
