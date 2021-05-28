@@ -25,9 +25,6 @@ void setup() {
     TCCR1B = TCCR1B & B11111000 | B00000001; // increase PWM frequency to 31Khz, 490Hz may be too slow
 
     Serial.begin(9600);
-
-    pinMode(ledPin,OUTPUT);
-    pinMode(analogPin,INPUT);
     delay(3000); // LEDs are somehow one before this completes
 
     SPI.begin();// TLC5948 Interface
