@@ -206,6 +206,7 @@ class Tlc5948 {
 
 inline void pulse_high(int pinNum) { // ___----___
     digitalWrite(pinNum,HIGH);
+    asm volatile ("nop"); // NOP*4 -> 1/16Mhz * 4 = 62.5ns * 4 = 250ns
     asm volatile ("nop");
     asm volatile ("nop");
     asm volatile ("nop");
@@ -214,6 +215,7 @@ inline void pulse_high(int pinNum) { // ___----___
 
 inline void pulse_low(int pinNum) { // ---____---
     digitalWrite(pinNum,LOW);
+    asm volatile ("nop");
     asm volatile ("nop");
     asm volatile ("nop");
     asm volatile ("nop");
