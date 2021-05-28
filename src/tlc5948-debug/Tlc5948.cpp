@@ -199,7 +199,8 @@ void Tlc5948::begin() {
                             Fctrls::lodvlt_mode_12v | // highest LOD vlt (1.2V)
                             Fctrls::lsdvlt_mode_065 | // highest LSD vlt (0.65*vcc)
                             Fctrls::lattmg_mode_17  | // 17 clks before we can latch error data
-                            Fctrls::idmcur_mode_2ua; // 2ua on IDM
+                            Fctrls::idmcur_mode_2ua |// 2ua on IDM
+                            Fctrls::psmode_none;     // no power saving mode
                             //Fctrls::psmode_sclk     | // power off until sclk
                             //Fctrls::psmode_data     | // power off until new data
                             //Fctrls::psmode_noclk; // turn off internal GSCLK on power save mode
