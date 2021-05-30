@@ -15,8 +15,8 @@ int const SCLK = 0;  // serial data clock
 #else // assume Arduino Nano
 #warning "Using Arduino Nano Pin Definitions"
 int const LAT = 3;   // latch control, using D3
-int const GSCLK = 9; // pwm clock, using D9 for PWM (~490Hz)
-int const SSEL = 10; // slave select, HW SS
+int const GSCLK = 9; // pwm clock, using D9 w/Fast PWM (~8Mhz)
+int const SSEL = 10; // slave select, HW SS, not needed
 int const SIN = 11;   // serial data input (to Tlc5948) HW MOSI, using D11
 int const SOUT = 12;  // serial data output (from Tlc5948)  HW MISO, using D12
 int const SCLK = 13;  // HW SCLK, using D13
@@ -234,11 +234,42 @@ inline void notifyControlData() {
 }
 
 inline void Tlc5948::startGsclk() {
-    analogWrite(GSCLK,127); // PWM 490Hz at 50% -> square wave
+    // On Arduino Nano
+    // timer 0 -> A: 6 B: 5 
+    // timer 1 -> A: 9 B: 10 * using this timer
+    // timer 2 -> A: 3 B: 11
+
+    // From https://withinspecifications.30ohm.com/2014/02/20/Fast-PWM-on-AtMega328/
+    // and atmega328p datasheet
+
+    // To set appropriate mode for PWM we need three settings enabled:
+    // TCCRXA - PWM mode + output CLEAR invert/non-invert
+    // Fast Pwm Mode(counts up and resets to 0, and changes output on OCR0X val)
+    // \- We do this by settings WGM0[1:0] in TCCR0A to 1 and WGM02 TCCR0B to 1
+    // \- WGM02 in TCCR0B also specifies that reset to 0 happens at OCR0A value
+    // \- and not at TOP (255 for timer 0, 65536 for timer 1)
+    // set COM0X1 bits to 1
+    // \- sets output to clear on match and start from BOTTOM (non-inverting)
+    ICR1 = 1; // according to datasheet this works well for static duty as TOP
+              // using 1 as TOP gives 1 bit resolution but 8Mhz max frequency
+
+    // enable A and B, using OCR1A TOP
+    //TCCRXA = _BV(COM1A1) | _BV(COM1B1) | _BV(WGM11) | _BV(WGM10);
+    //enable just A, using ICR1 as TOP (leave WGM10 as 0)
+    TCCR1A = _BV(COM1A1) | _BV(WGM11);
+
+    // TCCRXB - Timer control Reg b
+    // controls: clock prescaler (and upper bits of WGM)
+    // for timer0: CS0[2:0] = 001 -> prescaler = 1 (CLK is now 16Mhz)
+    //       note: WGM02   =  1 -> set Fast PWM mode
+    TCCR1B =  _BV(WGM13) | _BV(WGM12) | _BV(CS10);
+
+    OCR1A = 0;
+
 }
 
 inline void Tlc5948::stopGsclk() {
-    analogWrite(GSCLK,0);
+    TCCR1A &= ~(_BV(COM1A1)); // disconnect A
 }
 
 inline void Tlc5948::pulseLatch() {
