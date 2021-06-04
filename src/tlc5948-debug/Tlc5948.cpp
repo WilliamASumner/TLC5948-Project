@@ -77,7 +77,6 @@ inline void copyBuf(void* inBuf, void* outBuf, unsigned int size) {
 
 // send data from either ctrl buff or gs data buff
 void Tlc5948::exchangeData(DataKind type) {
-    SPI.beginTransaction(SPISettings(SPI_SPEED,BIT_ORDER,SPI_MODE));
     switch (type) {
         case DataKind::gsdata:
             copyBuf(gsDataBuf,spiBuf,32);
@@ -93,6 +92,7 @@ void Tlc5948::exchangeData(DataKind type) {
         default:
             break;
     }
+    SPI.beginTransaction(SPISettings(SPI_SPEED,BIT_ORDER,SPI_MODE));
     SPI.transfer(spiBuf,32);
     SPI.endTransaction();
     asm volatile("nop"); // give it a rest before we pulse high
