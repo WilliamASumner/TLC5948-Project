@@ -172,15 +172,15 @@ inline Fctrls operator~(Fctrls a) {
     return static_cast<Fctrls>(~static_cast<int>(a));
 }
 
-enum class DataKind { gsdata, controldata, none };
+enum class DataKind { gsdata, ctrldata, none };
 
 class Tlc5948 {
     public:
-        void updateDcData(Channels,uint8_t);
-        void updateBcData(uint8_t);
-        void updateGsData(Channels,uint16_t);
+        void setDcData(Channels,uint8_t);
+        void setBcData(uint8_t);
+        void setGsData(Channels,uint16_t);
         uint8_t pushGsData(uint16_t);
-        void updateFctrlData(Fctrls);
+        void setFctrlBits(Fctrls);
 
         void exchangeData(DataKind);
         SidFlags getSidData(Channels&,Channels&,Channels&,bool = false);
@@ -192,6 +192,8 @@ class Tlc5948 {
         void printSpiBuf();
         void printCtrlDataBuf();
         void begin(void);
+
+        void readDeviceContents(uint8_t*,int);
 
         Tlc5948();
 
@@ -276,31 +278,32 @@ inline void Tlc5948::pulseLatch() {
     pulse_high(LAT);
 }
 
-inline void Tlc5948::printGsDataBuf() {
-    for (int i = 0; i < 32; i++) {
+inline void printBuf(uint8_t* buf, int size) {
+    for (int i = 0; i < size; i++) {
         Serial.print("0x");
-        Serial.print(gsDataBuf[i],HEX);
-        Serial.print(" ");
+        if (buf[i] < 15)
+            Serial.print("0");
+        Serial.print(buf[i],HEX);
+        if (i % 8 == 0)
+            Serial.println();
+        else
+            Serial.print(" ");
     }
     Serial.println();
 }
 
+
+inline void Tlc5948::printGsDataBuf() {
+    printBuf(gsDataBuf,32);
+}
+
+
 inline void Tlc5948::printSpiBuf() {
-    for (int i = 0; i < 32; i++) {
-        Serial.print("0x");
-        Serial.print(spiBuf[i],HEX);
-        Serial.print(" ");
-    }
-    Serial.println();
+    printBuf(spiBuf,32);
 }
 
 inline void Tlc5948::printCtrlDataBuf() {
-    for (int i = 0; i < 32; i++) {
-        Serial.print("0x");
-        Serial.print(ctrlDataBuf[i],HEX);
-        Serial.print(" ");
-    }
-    Serial.println();
+    printBuf(ctrlDataBuf,32);
 }
 
 inline Fctrls Tlc5948::getFctrlBits() {

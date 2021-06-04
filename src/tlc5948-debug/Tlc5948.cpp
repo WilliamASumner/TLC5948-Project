@@ -10,7 +10,7 @@ Tlc5948::Tlc5948() {
 }
 
 // dot correction data, 7 bits per channel, 0 to 100%
-void Tlc5948::updateDcData(Channels channelMask, uint8_t value) {
+void Tlc5948::setDcData(Channels channelMask, uint8_t value) {
     value &= 0x7f;
     for (int i = 0; i <= NUM_CHANNELS; i++) {
         if ((channelMask & Channels::chan_set) != Channels::chan_set) { // write only to selected channels
@@ -33,14 +33,14 @@ void Tlc5948::updateDcData(Channels channelMask, uint8_t value) {
 }
 
 // Global brightness control data, 7 bits for all Channels (25% to 100%)
-void Tlc5948::updateBcData(uint8_t value) {
+void Tlc5948::setBcData(uint8_t value) {
     value &= 0x7f;
     int endOfDcData = 31-NUM_CHANNELS * 7 / 8;
     ctrlDataBuf[endOfDcData] = value;
 }
 
 // Function Control, 18 bits
-void Tlc5948::updateFctrlData(Fctrls f) {
+void Tlc5948::setFctrlBits(Fctrls f) {
     funcControlBits = f; // save this for easier modification
     unsigned long fbits = static_cast<unsigned long>(funcControlBits);
     int endOfDcData = 31-NUM_CHANNELS * 7 / 8;
@@ -55,7 +55,7 @@ void Tlc5948::updateFctrlData(Fctrls f) {
 // greyscale, pwm data, 16 bits per channel
 // when blank bit of gs control reg is set (1), output is all 0's
 // blank is set to 1 on startup, must write gs data before setting blank to 0
-void Tlc5948::updateGsData(Channels channelMask, uint16_t value) {
+void Tlc5948::setGsData(Channels channelMask, uint16_t value) {
     for (int i = NUM_CHANNELS-1; i >= 0; i--) {
         if ((channelMask & Channels::out0) != Channels::out0) {
             channelMask >>= 1;
@@ -84,7 +84,7 @@ void Tlc5948::exchangeData(DataKind type) {
             digitalWrite(SIN,LOW);
             pulse_high(SCLK);
             break;
-        case DataKind::controldata:
+        case DataKind::ctrldata:
             copyBuf(ctrlDataBuf,spiBuf,32);
             digitalWrite(SIN,HIGH);
             pulse_high(SCLK);
@@ -188,9 +188,9 @@ void Tlc5948::begin() {
     pinMode(LAT,OUTPUT);   // latch control
     pinMode(GSCLK,OUTPUT); // PWM clock
 
-    updateGsData(Channels::all,0xFFFF); // 100% brightness
-    updateDcData(Channels::all,0x7f); // all dot correction to 100%
-    updateBcData(0x7f); // global brightness to max
+    setGsData(Channels::all,0xFFFF); // 100% brightness
+    setDcData(Channels::all,0x7f); // all dot correction to 100%
+    setBcData(0x7f); // global brightness to max
 
     Fctrls funcControls =   Fctrls::blank_mode_0    | // blank is set to 1 by chip, need to zero it out to use chip
                             Fctrls::dsprpt_mode_0   | // no async update color data
@@ -205,5 +205,12 @@ void Tlc5948::begin() {
                             //Fctrls::psmode_data     | // power off until new data
                             //Fctrls::psmode_noclk; // turn off internal GSCLK on power save mode
 
-    updateFctrlData(funcControls);
+    setFctrlBits(funcControls);
 }
+
+void Tlc5948::readDeviceContents(uint8_t *bytes, int numBytes) {
+    for (int i = 0; i < numBytes; i++) {
+        bytes[i] = SPI.transfer(0x0);
+    }
+}
+

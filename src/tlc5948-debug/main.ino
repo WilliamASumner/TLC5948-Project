@@ -23,22 +23,38 @@ inline void printSidFlags(SidFlags s) {
 
 void setup() {
     Serial.begin(9600);
-    delay(3000); // LEDs are somehow on before this completes
+    delay(50); // LEDs are somehow on before this completes
 
     SPI.begin();// TLC5948 Interface
     tlc.begin(); // sets up pins, default GS/DC/BC data and Func Ctrl bits
 
-    tlc.updateGsData(Channels::all,0xFFFF); // all channels 100%
+    //tlc.setGsData(Channels::all,0xFFFF); // all channels 100%
+    //tlc.exchangeData(DataKind::gsdata);
+    tlc.setGsData(Channels::all,0x0); // clear all data in the chip
+    tlc.exchangeData(DataKind::gsdata);
+    tlc.setGsData(Channels::all,0x0fff); // clear all data in the chip
     tlc.exchangeData(DataKind::gsdata);
 
-    tlc.updateDcData(Channels::all,0x7F); // all channels DC high (maximum current defined by IREF ~ 20ma)
-    Fctrls f = tlc.getFctrlBits()  & ~(Fctrls::blank_mask); // clear blank bit
-    tlc.updateFctrlData(f);
+    tlc.setDcData(Channels::all,0x7f);
+    tlc.setBcData(0x7f);
+    Fctrls fSave = tlc.getFctrlBits();
+    tlc.setFctrlBits(Fctrls::empty_bits | Fctrls::blank_mode_1);
+    tlc.exchangeData(DataKind::ctrldata);
+    tlc.setFctrlBits(fSave);
+    tlc.exchangeData(DataKind::ctrldata);
 
-    Serial.print("Control data:\t");
-    tlc.printCtrlDataBuf();
 
-    tlc.exchangeData(DataKind::controldata);
+    /*
+    //Debug
+    uint8_t bytes[33] = {0};
+    tlc.readDeviceContents(bytes,33); // shifting in all 0's
+    Serial.print("Device Contents after exchange: ");
+    printBuf(bytes,33);
+
+    tlc.readDeviceContents(bytes,33); // shifting in all 0's
+    Serial.print("Device Contents after shifting in 0's: ");
+    printBuf(bytes,33);
+
     Serial.println("Exchanged Control data");
     tlc.startGsclk();
     Serial.println("started GSCLK");
@@ -55,8 +71,9 @@ void setup() {
     printChannels(lsd);
     Serial.print("old channels: ");
     printChannels(old);
-
+    */
 }
 
 void loop() {
+    tlc.exchangeData(DataKind::gsdata);
 }
