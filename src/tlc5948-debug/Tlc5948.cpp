@@ -77,22 +77,19 @@ inline void copyBuf(void* inBuf, void* outBuf, unsigned int size) {
 
 // send data from either ctrl buff or gs data buff
 void Tlc5948::exchangeData(DataKind type) {
+    SPI.beginTransaction(SPISettings(SPI_SPEED,BIT_ORDER,SPI_MODE));
     switch (type) {
         case DataKind::gsdata:
             copyBuf(gsDataBuf,spiBuf,32);
-            digitalWrite(SIN,LOW);
-            pulse_high(SCLK);
+            SPI.transfer(0x0); // transfers an 7 extra bits but it works
             break;
         case DataKind::ctrldata:
             copyBuf(ctrlDataBuf,spiBuf,32);
-            digitalWrite(SIN,HIGH);
-            pulse_high(SCLK);
-            digitalWrite(SIN,LOW);
+            SPI.transfer(0x1);
             break;
         default:
             break;
     }
-    SPI.beginTransaction(SPISettings(SPI_SPEED,BIT_ORDER,SPI_MODE));
     SPI.transfer(spiBuf,32);
     SPI.endTransaction();
     pulseLatch(); // latch in the new data
