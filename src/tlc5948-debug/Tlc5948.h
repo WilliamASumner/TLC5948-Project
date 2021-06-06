@@ -27,7 +27,7 @@ uint32_t const SPI_SPEED = 10000; // 10Khz to start //33000000; // 33mhz listed 
 const unsigned int BIT_ORDER = MSBFIRST;
 const unsigned int SPI_MODE = SPI_MODE0; // todo check if this is right
 const int NUM_CHANNELS = 16;
-const int PWM_FREQ = 490; // default arduino pin 9 freq 
+const int PWM_FREQ = 8000000; // max speed from fast PWM mode
 
 // led open, led short, output leakage, iref short flag, pre-thermal warning, thermal error flag
 // SidFlags = BADPARSE TEF PTW ISF OLD LSD LOD
