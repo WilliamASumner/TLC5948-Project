@@ -75,8 +75,8 @@ inline void copyBuf(void* inBuf, void* outBuf, unsigned int size) {
     }
 }
 
-// send data from either ctrl buff or gs data buff
-void Tlc5948::exchangeData(DataKind type) {
+// send data from either ctrl buff or gs data buff and read TLC5948 data
+/*void Tlc5948::exchangeData(DataKind type) {
     SPI.beginTransaction(SPISettings(SPI_SPEED,BIT_ORDER,SPI_MODE));
     switch (type) {
         case DataKind::gsdata:
@@ -93,11 +93,36 @@ void Tlc5948::exchangeData(DataKind type) {
     SPI.transfer(spiBuf,32);
     SPI.endTransaction();
     pulseLatch(); // latch in the new data
+}*/
+
+// send data from either ctrl buff or gs data buff, don't read TLC5948 data
+void Tlc5948::writeData(DataKind type) {
+    uint8_t* transferArr = NULL;
+    if (type == DataKind::gsdata) {
+        transferArr = gsDataBuf;
+    } else {
+        transferArr = ctrlDataBuf;
+        digitalWrite(SIN,HIGH);
+        pulse_high(SCLK);
+        digitalWrite(SIN,LOW);
+    }
+
+    for (int i = 0; i < 32; i++) {
+        uint8_t byte = transferArr[i];
+        for (int j = 7; j >=0; j--) { // MSB First
+            digitalWrite(SIN,(byte >> j) & 0x1);
+            // here we should check SOUT for data... TODO
+            pulse_high(SCLK);
+        }
+    }
+    digitalWrite(SIN,LOW); // return SIN to low
+    pulseLatch();
 }
 
+/*
 SidFlags Tlc5948::getSidData(Channels& old, Channels& lsd, Channels& lod, bool refreshData) {
     if (refreshData) {
-        exchangeData(DataKind::gsdata); // re-push in gsdata, pulling SidData out into spiBuf
+        writeData(DataKind::gsdata); // re-push in gsdata, pulling SidData out into spiBuf
         int delayMs = 0;
         Fctrls lattmg_bits = funcControlBits & (Fctrls::lattmg_mask);
         switch(lattmg_bits) {
@@ -166,10 +191,11 @@ SidFlags Tlc5948::getSidData(Channels& old, Channels& lsd, Channels& lod, bool r
     }
     return flags;
 }
+*/
 
 void Tlc5948::begin() {
     // Note: driver must first send gs + dc/bc/fctrl data before it will turn on
-    // this function just gets the buffers ready, 2+ calls to exchangeData are needed
+    // this function just gets the buffers ready, 2+ calls to writeData are needed
     // to actually start the chip
 
 
