@@ -21,27 +21,51 @@ inline void printSidFlags(SidFlags s) {
     Serial.println();
 }
 
+void blinkPin(int pinNum, int times, int delayTime) {
+    for (int i = 0; i < times; i++) {
+        digitalWrite(pinNum,HIGH); // blink
+        delay(delayTime);
+        digitalWrite(pinNum,LOW);
+        delay(delayTime);
+    }
+}
+
 void setup() {
     Serial.begin(9600);
     delay(50); // LEDs are somehow on before this completes
 
-    SPI.begin();// TLC5948 Interface
+    pinMode(2,OUTPUT);
+    blinkPin(2,1,500);
+    delay(1000);
+
+    //SPI.begin();// TLC5948 Interface
     tlc.begin(); // sets up pins, default GS/DC/BC data and Func Ctrl bits
 
     //tlc.setGsData(Channels::all,0xFFFF); // all channels 100%
-    //tlc.exchangeData(DataKind::gsdata);
-    tlc.setGsData(Channels::all,0x0); // clear all data in the chip
-    tlc.exchangeData(DataKind::gsdata);
-    tlc.setGsData(Channels::all,0x0fff); // clear all data in the chip
-    tlc.exchangeData(DataKind::gsdata);
+    //tlc.writeData(DataKind::gsdata);
+    tlc.setGsData(Channels::all,0xffff); // clear all data in the chip
+    tlc.writeData(DataKind::gsdata);
+    tlc.writeData(DataKind::gsdata);
+    if (digitalRead(SOUT) == HIGH) {
+        blinkPin(2,3,200);
+    } else {
+        blinkPin(2,1,200);
+    }
+    delay(2000);
 
     tlc.setDcData(Channels::all,0x7f);
     tlc.setBcData(0x7f);
     Fctrls fSave = tlc.getFctrlBits();
-    tlc.setFctrlBits(Fctrls::empty_bits | Fctrls::blank_mode_1);
-    tlc.exchangeData(DataKind::ctrldata);
+    fSave &= ~(Fctrls::dsprpt_mask);
+    fSave |= Fctrls::dsprpt_mode_1;
     tlc.setFctrlBits(fSave);
-    tlc.exchangeData(DataKind::ctrldata);
+    tlc.writeData(DataKind::ctrldata);
+    if (digitalRead(SOUT) == HIGH) { // then it thinks it's writing control data
+        blinkPin(2,2,200);
+        tlc.startGsclk();
+    } else {
+        blinkPin(2,4,200);
+    }
 
 
     /*
@@ -75,5 +99,10 @@ void setup() {
 }
 
 void loop() {
-    tlc.exchangeData(DataKind::gsdata);
+    tlc.setDcData(Channels::all,0xffff);
+    tlc.writeData(DataKind::ctrldata);
+    delay(1000);
+    tlc.setDcData(Channels::all,0x0);
+    tlc.writeData(DataKind::ctrldata);
+    delay(1000);
 }
