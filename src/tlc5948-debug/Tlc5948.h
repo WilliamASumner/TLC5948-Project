@@ -28,6 +28,8 @@ const unsigned int BIT_ORDER = MSBFIRST;
 const unsigned int SPI_MODE = SPI_MODE0; // todo check if this is right
 const int NUM_CHANNELS = 16;
 const int PWM_FREQ = 8000000; // max speed from fast PWM mode
+const uint16_t MAX_BRIGHTNESS = 0xffff;
+const uint16_t MIN_BRIGHTNESS = 0x0;
 
 // led open, led short, output leakage, iref short flag, pre-thermal warning, thermal error flag
 // SidFlags = BADPARSE TEF PTW ISF OLD LSD LOD
@@ -182,7 +184,7 @@ class Tlc5948 {
         uint8_t pushGsData(uint16_t);
         void setFctrlBits(Fctrls);
 
-        void exchangeData(DataKind);
+        void writeData(DataKind);
         SidFlags getSidData(Channels&,Channels&,Channels&,bool = false);
         void startGsclk();
         void stopGsclk();
@@ -216,17 +218,6 @@ inline void pulse_low(int pinNum) { // ---____---
     digitalWrite(pinNum,HIGH);
 }
 
-inline void notifyGsData() {
-    digitalWrite(SIN,LOW); // GS data MSB is low
-    pulse_high(SCLK); // __-__
-}
-
-inline void notifyControlData() {
-    digitalWrite(SIN,HIGH); // Control data MSB is high
-    pulse_high(SCLK); // __-__
-    digitalWrite(SIN,LOW);
-}
-
 inline void Tlc5948::startGsclk() {
     // On Arduino Nano
     // timer 0 -> A: 6 B: 5 
@@ -254,9 +245,10 @@ inline void Tlc5948::startGsclk() {
 
     // TCCRXB - Timer control Reg b
     // controls: clock prescaler (and upper bits of WGM)
-    // for timer0: CS0[2:0] = 001 -> prescaler = 1 (CLK is now 16Mhz)
+    // for timer1: CS0[2:0] = 001 -> prescaler = 1 (produces 8Mhz signal)
     //       note: WGM02   =  1 -> set Fast PWM mode
-    TCCR1B =  _BV(WGM13) | _BV(WGM12) | _BV(CS10);
+    //       other prescalers: 010 -> prescaler = 8 (produces 1Mhz signal, cleaner than the 8Mhz)
+    TCCR1B =  _BV(WGM13) | _BV(WGM12) | _BV(CS11);
 
     OCR1A = 0;
 
