@@ -23,11 +23,11 @@ int const SCLK = 13;  // HW SCLK, using D13
 #endif // ifdef ARDUINO_TEENSY41
 
 // SPI settings
-uint32_t const SPI_SPEED = 10000; // 10Khz to start //33000000; // 33mhz listed on data sheet
+uint32_t const SPI_SPEED = 33000000; // 33mhz listed on data sheet, more like 
 const unsigned int BIT_ORDER = MSBFIRST;
-const unsigned int SPI_MODE = SPI_MODE0; // todo check if this is right
+const unsigned int SPI_MODE = SPI_MODE0;
 const int NUM_CHANNELS = 16;
-const int PWM_FREQ = 8000000; // max speed from fast PWM mode
+const uint32_t PWM_FREQ = 8000000; // max speed from fast PWM mode
 const uint16_t MAX_BRIGHTNESS = 0xffff;
 const uint16_t MIN_BRIGHTNESS = 0x0;
 
@@ -50,6 +50,24 @@ inline void operator|=(SidFlags& a, SidFlags b) {
 inline SidFlags operator~(SidFlags a) {
     return static_cast<SidFlags>(~static_cast<int>(a));
 }
+
+inline void printSidFlags(SidFlags s) {
+    if ((s & SidFlags::TEF) != SidFlags::NONE)
+        Serial.print(" TEF ");
+    if ((s & SidFlags::PTW) != SidFlags::NONE)
+        Serial.print(" PTW ");
+    if ((s & SidFlags::ISF) != SidFlags::NONE)
+        Serial.print(" ISF ");
+    if ((s & SidFlags::OLD) != SidFlags::NONE)
+        Serial.print(" OLD ");
+    if ((s & SidFlags::LSD) != SidFlags::NONE)
+        Serial.print(" LSD ");
+    if ((s & SidFlags::LOD) != SidFlags::NONE)
+        Serial.print(" LOD ");
+    Serial.println();
+}
+
+
 
 enum class Channels : uint16_t { // Channel masks
     none =     0x0000,
@@ -104,6 +122,11 @@ inline void operator>>=(Channels& a, int b) {
 inline void operator<<=(Channels& a, int b) {
     a = static_cast<Channels>(static_cast<int>(a) << b);
 }
+inline void printChannels(Channels c) {
+    Serial.println(static_cast<unsigned int>(c),HEX);
+}
+
+
 
 enum class Fctrls : uint32_t { // function control masks and values
     blank_mask =      0x00001, // turns off outputs
@@ -173,6 +196,48 @@ inline void operator&=(Fctrls& a, Fctrls b) {
 inline Fctrls operator~(Fctrls a) {
     return static_cast<Fctrls>(~static_cast<int>(a));
 }
+inline int operator>>(Fctrls a, int shift) {
+    return static_cast<int>(a) >> shift;
+}
+
+// Datasheet will help tremendously with decoding this
+inline void printFctrls(Fctrls f) {
+    Serial.print("Blank: 0x");
+    Serial.println((f & Fctrls::blank_mask)>>0,HEX);
+
+    Serial.print("Autodisplay repeat: 0x");
+    Serial.println((f & Fctrls::dsprpt_mask)>>1,HEX);
+
+    Serial.print("Timing reset: 0x");
+    Serial.println((f & Fctrls::tmgrst_mask)>>2,HEX);
+
+    Serial.print("ESPWM: 0x");
+    Serial.println((f & Fctrls::espwm_mask)>>3,HEX);
+
+    Serial.print("LOD voltage: 0x");
+    Serial.println((f & Fctrls::lodvlt_mask)>>4,HEX);
+
+    Serial.print("LSD voltage: 0x");
+    Serial.println((f & Fctrls::lsdvlt_mask)>>6,HEX);
+
+    Serial.print("Lat Timing: 0x");
+    Serial.println((f & Fctrls::lattmg_mask)>>8,HEX);
+
+    Serial.print("Idm Enable: 0x");
+    Serial.println((f & Fctrls::idmena_mask)>>10,HEX);
+
+    Serial.print("Idm repeat: 0x");
+    Serial.println((f & Fctrls::idmena_mask)>>11,HEX);
+
+    Serial.print("Idm current: 0x");
+    Serial.println((f & Fctrls::idmrpt_mask)>>12,HEX);
+
+    Serial.print("OLD enable: 0x");
+    Serial.println((f & Fctrls::oldena_mask)>>14,HEX);
+
+    Serial.print("PS mode: 0x");
+    Serial.println((f & Fctrls::psmode_mask)>>15,HEX);
+}
 
 enum class DataKind { gsdata, ctrldata, none };
 
@@ -184,7 +249,8 @@ class Tlc5948 {
         uint8_t pushGsData(uint16_t);
         void setFctrlBits(Fctrls);
 
-        void writeData(DataKind);
+        void exchangeData(DataKind); // SPI mode
+        void writeData(DataKind); // bit bang mode
         SidFlags getSidData(Channels&,Channels&,Channels&,bool = false);
         void startGsclk();
         void stopGsclk();
@@ -248,7 +314,10 @@ inline void Tlc5948::startGsclk() {
     // for timer1: CS0[2:0] = 001 -> prescaler = 1 (produces 8Mhz signal)
     //       note: WGM02   =  1 -> set Fast PWM mode
     //       other prescalers: 010 -> prescaler = 8 (produces 1Mhz signal, cleaner than the 8Mhz)
-    TCCR1B =  _BV(WGM13) | _BV(WGM12) | _BV(CS11);
+    
+    // Using _BV(CS11) produces slower 1Mhz signal, but it's cleaner than the 8Mhz one
+    // this signal can be used if the ESPWM mode
+    TCCR1B =  _BV(WGM13) | _BV(WGM12) | _BV(CS10);
 
     OCR1A = 0;
 
