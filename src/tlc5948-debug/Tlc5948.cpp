@@ -76,7 +76,7 @@ inline void copyBuf(void* inBuf, void* outBuf, unsigned int size) {
 }
 
 // send data from either ctrl buff or gs data buff and read TLC5948 data
-/*void Tlc5948::exchangeData(DataKind type) {
+void Tlc5948::exchangeData(DataKind type) {
     SPI.beginTransaction(SPISettings(SPI_SPEED,BIT_ORDER,SPI_MODE));
     switch (type) {
         case DataKind::gsdata:
@@ -93,14 +93,16 @@ inline void copyBuf(void* inBuf, void* outBuf, unsigned int size) {
     SPI.transfer(spiBuf,32);
     SPI.endTransaction();
     pulseLatch(); // latch in the new data
-}*/
+}
 
 // send data from either ctrl buff or gs data buff, don't read TLC5948 data
 void Tlc5948::writeData(DataKind type) {
     uint8_t* transferArr = NULL;
-    if (type == DataKind::gsdata) {
+    if (type == DataKind::gsdata) { // GS data, send 0
         transferArr = gsDataBuf;
-    } else {
+        digitalWrite(SIN,LOW);
+        pulse_high(SCLK);
+    } else { // Control data, send 1
         transferArr = ctrlDataBuf;
         digitalWrite(SIN,HIGH);
         pulse_high(SCLK);
