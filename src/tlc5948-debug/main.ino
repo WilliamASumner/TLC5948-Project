@@ -19,8 +19,6 @@ void setup() {
     tlc.exchangeData(DataKind::ctrldata);
 
     tlc.startGsclk();
-
-    Serial.println("Here");
 }
 
 
