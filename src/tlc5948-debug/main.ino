@@ -13,8 +13,13 @@ void setup() {
     tlc.setBcData(0x7f);
     Fctrls fSave = tlc.getFctrlBits();
     fSave &= ~(Fctrls::dsprpt_mask);
-    fSave |= Fctrls::dsprpt_mode_1; // set autodisplay repeat
-    fSave |= Fctrls::espwm_mode_1;
+    fSave |= Fctrls::dsprpt_mode_1; // set atutodisplay repeat
+
+    //fSave &= ~(Fctrls::espwm_mask);
+    //fSave |= Fctrls::espwm_mode_1; // set ES PWM mode on, basically breaks up
+                                     // long ON/OFF periods into 128 smaller segments
+                                     // with even distribution
+
     tlc.setFctrlBits(fSave);
     tlc.exchangeData(DataKind::ctrldata);
 
