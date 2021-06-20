@@ -252,8 +252,8 @@ class Tlc5948 {
         void exchangeData(DataKind); // SPI mode
         void writeData(DataKind); // bit bang mode
         SidFlags getSidData(Channels&,Channels&,Channels&,bool = false);
-        void startGsclk();
-        void stopGsclk();
+        void startBuiltinGsclk();
+        void stopBuiltinGsclk();
         void pulseLatch();
         Fctrls getFctrlBits();
         void printGsDataBuf();
@@ -284,7 +284,7 @@ inline void pulse_low(int pinNum) { // ---____---
     digitalWrite(pinNum,HIGH);
 }
 
-inline void Tlc5948::startGsclk() {
+inline void Tlc5948::startBuiltinGsclk() {
     // On Arduino Nano
     // timer 0 -> A: 6 B: 5 
     // timer 1 -> A: 9 B: 10 * using this timer
@@ -323,7 +323,7 @@ inline void Tlc5948::startGsclk() {
 
 }
 
-inline void Tlc5948::stopGsclk() {
+inline void Tlc5948::stopBuiltinGsclk() {
     TCCR1A &= ~(_BV(COM1A1)); // disconnect A
 }
 

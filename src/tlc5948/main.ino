@@ -23,7 +23,7 @@ void setup() {
     tlc.setFctrlBits(fSave);
     tlc.exchangeData(DataKind::ctrldata);
 
-    tlc.startGsclk();
+    tlc.startBuiltinGsclk();
 }
 
 
