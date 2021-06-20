@@ -23,7 +23,7 @@ void Tlc5948::setDcData(Channels channelMask, uint8_t value) {
         int align = bitnum % 8;
         ctrlDataBuf[bytenum] &= ~(0x7f << align) & 0xff;
         ctrlDataBuf[bytenum] |= (value << align) & 0xff;
-        if (9 - align < 8) {
+        if (align > 1) {
             ctrlDataBuf[bytenum-1] &= ~(0x7f >> (8-align)) & 0xff;
             ctrlDataBuf[bytenum-1] |= (value >> (8-align)) & 0xff;
         }
