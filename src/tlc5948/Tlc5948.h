@@ -252,6 +252,7 @@ class Tlc5948 {
         void exchangeData(DataKind); // SPI mode
         void writeData(DataKind); // bit bang mode
         SidFlags getSidData(Channels&,Channels&,Channels&,bool = false);
+
         void startBuiltinGsclk();
         void stopBuiltinGsclk();
         void pulseLatch();
@@ -259,6 +260,7 @@ class Tlc5948 {
         void printGsDataBuf();
         void printSpiBuf();
         void printCtrlDataBuf();
+
         void begin(void);
 
         void readDeviceContents(uint8_t*,int);

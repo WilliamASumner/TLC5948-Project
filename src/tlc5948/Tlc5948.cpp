@@ -121,7 +121,6 @@ void Tlc5948::writeData(DataKind type) {
     pulseLatch();
 }
 
-/*
 SidFlags Tlc5948::getSidData(Channels& old, Channels& lsd, Channels& lod, bool refreshData) {
     if (refreshData) {
         writeData(DataKind::gsdata); // re-push in gsdata, pulling SidData out into spiBuf
@@ -193,7 +192,6 @@ SidFlags Tlc5948::getSidData(Channels& old, Channels& lsd, Channels& lod, bool r
     }
     return flags;
 }
-*/
 
 void Tlc5948::begin() {
     // Note: driver must first send gs + dc/bc/fctrl data before it will turn on
