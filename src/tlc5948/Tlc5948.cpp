@@ -97,7 +97,7 @@ void Tlc5948::exchangeData(DataKind type) {
 
 SidFlags Tlc5948::getSidData(Channels& old, Channels& lsd, Channels& lod, bool refreshData) {
     if (refreshData) {
-        writeData(DataKind::gsdata); // re-push in gsdata, pulling SidData out into spiBuf
+        exchangeData(DataKind::gsdata); // re-push in gsdata, pulling SidData out into spiBuf
         int delayMs = 0;
         Fctrls lattmg_bits = funcControlBits & (Fctrls::lattmg_mask);
         switch(lattmg_bits) {
