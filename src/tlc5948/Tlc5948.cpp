@@ -95,32 +95,6 @@ void Tlc5948::exchangeData(DataKind type) {
     pulseLatch(); // latch in the new data
 }
 
-// send data from either ctrl buff or gs data buff, don't read TLC5948 data
-void Tlc5948::writeData(DataKind type) {
-    uint8_t* transferArr = NULL;
-    if (type == DataKind::gsdata) { // GS data, send 0
-        transferArr = gsDataBuf;
-        digitalWrite(SIN,LOW);
-        pulse_high(SCLK);
-    } else { // Control data, send 1
-        transferArr = ctrlDataBuf;
-        digitalWrite(SIN,HIGH);
-        pulse_high(SCLK);
-        digitalWrite(SIN,LOW);
-    }
-
-    for (int i = 0; i < 32; i++) {
-        uint8_t byte = transferArr[i];
-        for (int j = 7; j >=0; j--) { // MSB First
-            digitalWrite(SIN,(byte >> j) & 0x1);
-            // here we should check SOUT for data... TODO
-            pulse_high(SCLK);
-        }
-    }
-    digitalWrite(SIN,LOW); // return SIN to low
-    pulseLatch();
-}
-
 SidFlags Tlc5948::getSidData(Channels& old, Channels& lsd, Channels& lod, bool refreshData) {
     if (refreshData) {
         writeData(DataKind::gsdata); // re-push in gsdata, pulling SidData out into spiBuf

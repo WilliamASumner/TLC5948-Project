@@ -250,7 +250,6 @@ class Tlc5948 {
         void setFctrlBits(Fctrls);
 
         void exchangeData(DataKind); // SPI mode
-        void writeData(DataKind); // bit bang mode
         SidFlags getSidData(Channels&,Channels&,Channels&,bool = false);
 
         void startBuiltinGsclk();
