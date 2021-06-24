@@ -249,7 +249,7 @@ class Tlc5948 {
         uint8_t pushGsData(uint16_t);
         void setFctrlBits(Fctrls);
 
-        void exchangeData(DataKind); // SPI mode
+        void exchangeData(DataKind, uint8_t numTlcs = 1); // SPI mode
         SidFlags getSidData(Channels&,Channels&,Channels&,bool = false);
 
         void startBuiltinGsclk();
