@@ -6,24 +6,24 @@
 #ifdef ARDUINO_TEENSY41 // Teensy version
 #warning "Using Teensy Pin Definitions"
 #error "Unimplemented"
-int const LAT = 0;   // latch control
-int const GSCLK = 0; // pwm clock
-int const SSEL = 0; // slave select, HW SS
-int const SIN = 0;   // serial data input (to Tlc5948)
-int const SOUT = 0;  // serial data output (from Tlc5948) 
-int const SCLK = 0;  // serial data clock
+const int LAT = 0;   // latch control
+const int GSCLK = 0; // pwm clock
+const int SSEL = 0; // slave select, HW SS
+const int SIN = 0;   // serial data input (to Tlc5948)
+const int SOUT = 0;  // serial data output (from Tlc5948) 
+const int SCLK = 0;  // serial data clock
 #else // assume Arduino Nano
 #warning "Using Arduino Nano Pin Definitions"
-int const LAT = 3;   // latch control, using D3
-int const GSCLK = 9; // pwm clock, using D9 w/Fast PWM (~8Mhz)
-int const SSEL = 10; // slave select, HW SS, not needed
-int const SIN = 11;   // serial data input (to Tlc5948) HW MOSI, using D11
-int const SOUT = 12;  // serial data output (from Tlc5948)  HW MISO, using D12
-int const SCLK = 13;  // HW SCLK, using D13
+const int LAT = 3;   // latch control, using D3
+const int GSCLK = 9; // pwm clock, using D9 w/Fast PWM (~8Mhz)
+const int SSEL = 10; // slave select, HW SS, not needed
+const int SIN = 11;   // serial data input (to Tlc5948) HW MOSI, using D11
+const int SOUT = 12;  // serial data output (from Tlc5948)  HW MISO, using D12
+const int SCLK = 13;  // HW SCLK, using D13
 #endif // ifdef ARDUINO_TEENSY41
 
 // SPI settings
-uint32_t const SPI_SPEED = 33000000; // 33mhz listed on data sheet, more like 
+const uint32_t SPI_SPEED = 33000000; // 33mhz listed on data sheet, more like 
 const unsigned int BIT_ORDER = MSBFIRST;
 const unsigned int SPI_MODE = SPI_MODE0;
 const int NUM_CHANNELS = 16;
@@ -125,8 +125,6 @@ inline void operator<<=(Channels& a, int b) {
 inline void printChannels(Channels c) {
     Serial.println(static_cast<unsigned int>(c),HEX);
 }
-
-
 
 enum class Fctrls : uint32_t { // function control masks and values
     blank_mask =      0x00001, // turns off outputs
