@@ -197,6 +197,8 @@ void Tlc5948::begin() {
     // this function just gets the buffers ready, 2+ calls to writeData are needed
     // to actually start the chip
 
+    SPI.begin();
+
     // pin assignments
     pinMode(SSEL,OUTPUT); // slave select output -> prevent SPI slave mode
     pinMode(SIN,OUTPUT); // MOSI -> data to TLC5948

@@ -3,7 +3,6 @@
 Tlc5948     tlc; // PWM LED driver (using Hardware SPI)
 
 void setup() {
-    SPI.begin();// TLC5948 Interface
     tlc.begin(); // sets up pins, default GS/DC/BC data and Func Ctrl bits
 
     tlc.setGsData(Channels::all,0xffff); // clear all data in the chip
