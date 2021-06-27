@@ -9,7 +9,7 @@ void setup() {
     tlc.setGsData(Channels::all,0xffff); // clear all data in the chip
     tlc.exchangeData(DataKind::gsdata);
 
-    tlc.setDcData(Channels::all,0x0f);
+    tlc.setDcData(Channels::all,0xff);
     tlc.setBcData(0x7f);
     Fctrls fSave = tlc.getFctrlBits();
     fSave &= ~(Fctrls::dsprpt_mask);
