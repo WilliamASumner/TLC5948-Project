@@ -284,6 +284,7 @@ inline void pulse_low(int pinNum) { // ---____---
 }
 
 inline void Tlc5948::startBuiltinGsclk() {
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
     // On Arduino Nano
     // timer 0 -> A: 6 B: 5 
     // timer 1 -> A: 9 B: 10 * using this timer
@@ -320,6 +321,9 @@ inline void Tlc5948::startBuiltinGsclk() {
 
     OCR1A = 0;
 
+#else
+#error "Unsuppported platform, feel free to add a PR on GitHub!"
+#endif
 }
 
 inline void Tlc5948::stopBuiltinGsclk() {
