@@ -283,8 +283,38 @@ inline void pulse_low(int pinNum) { // ---____---
     digitalWrite(pinNum,HIGH);
 }
 
-inline void Tlc5948::startBuiltinGsclk() {
+inline void Tlc5948::pulseLatch() {
+    pulse_high(LAT);
+}
+
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
+inline void bitBangSpi1() {
+    noInterrupts();
+    SPCR &= ~_BV(SPE); // disable hw SPI
+
+    // Bit bang a '0'
+    PORTB |= 0b00001000; // set PB3/D11/MOSI high
+    PORTB |= 0b00100000; // set PB5/D13/SCLK high
+    PORTB &= 0b11011111; // set PB5/D13/SCLK low
+
+    SPCR |= _BV(SPE); // restore hw SPI
+    interrupts();
+}
+
+inline void bitBangSpi0() {
+    noInterrupts();
+    SPCR &= ~_BV(SPE); // disable hw SPI
+
+    // Bit bang a '0'
+    PORTB &= 0b11110111; // set PB3/D11/MOSI low
+    PORTB |= 0b00100000; // set PB5/D13/SCLK high
+    PORTB &= 0b11011111; // set PB5/D13/SCLK low
+
+    SPCR |= _BV(SPE); // restore hw SPI
+    interrupts();
+}
+
+inline void Tlc5948::startBuiltinGsclk() {
     // On Arduino Nano
     // timer 0 -> A: 6 B: 5 
     // timer 1 -> A: 9 B: 10 * using this timer
@@ -320,19 +350,14 @@ inline void Tlc5948::startBuiltinGsclk() {
     TCCR1B =  _BV(WGM13) | _BV(WGM12) | _BV(CS10);
 
     OCR1A = 0;
-
-#else
-#error "Unsuppported platform, feel free to add a PR on GitHub!"
-#endif
 }
 
 inline void Tlc5948::stopBuiltinGsclk() {
     TCCR1A &= ~(_BV(COM1A1)); // disconnect A
 }
-
-inline void Tlc5948::pulseLatch() {
-    pulse_high(LAT);
-}
+#else
+#error "Unsupported platform, feel free to add a PR on GitHub!"
+#endif
 
 inline void printBuf(uint8_t* buf, int size) {
     for (int i = 0; i < size; i++) {
