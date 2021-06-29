@@ -30,6 +30,7 @@ const int NUM_CHANNELS = 16;
 const uint32_t PWM_FREQ = 8000000; // max speed from fast PWM mode
 const uint16_t MAX_BRIGHTNESS = 0xffff;
 const uint16_t MIN_BRIGHTNESS = 0x0;
+const uint16_t END_OF_DC_DATA = 31-NUM_CHANNELS * 7 / 8;
 
 // led open, led short, output leakage, iref short flag, pre-thermal warning, thermal error flag
 // SidFlags = BADPARSE TEF PTW ISF OLD LSD LOD

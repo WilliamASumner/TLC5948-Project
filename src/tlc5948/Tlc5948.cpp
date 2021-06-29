@@ -35,20 +35,18 @@ void Tlc5948::setDcData(Channels channelMask, uint8_t value) {
 // Global brightness control data, 7 bits for all Channels (25% to 100%)
 void Tlc5948::setBcData(uint8_t value) {
     value &= 0x7f;
-    int endOfDcData = 31-NUM_CHANNELS * 7 / 8;
-    ctrlDataBuf[endOfDcData] = value;
+    ctrlDataBuf[END_OF_DC_DATA] = value;
 }
 
 // Function Control, 18 bits
 void Tlc5948::setFctrlBits(Fctrls f) {
     funcControlBits = f; // save this for easier modification
     unsigned long fbits = static_cast<unsigned long>(funcControlBits);
-    int endOfDcData = 31-NUM_CHANNELS * 7 / 8;
-    ctrlDataBuf[endOfDcData] &= ~(0xff << 7); // clear first bit value
-    ctrlDataBuf[endOfDcData] |= fbits << 7; // first bit gets put atop bc data (7 bits)
-    ctrlDataBuf[endOfDcData-1] = (fbits >> 1) & 0xff; // next 7 bits
-    ctrlDataBuf[endOfDcData-2] = (fbits >> 9) & 0xff; // ...
-    ctrlDataBuf[endOfDcData-3] = (fbits >> 17) & 0x01; // last 3 bits
+    ctrlDataBuf[END_OF_DC_DATA] &= ~(0xff << 7); // clear first bit value
+    ctrlDataBuf[END_OF_DC_DATA] |= fbits << 7; // first bit gets put atop bc data (7 bits)
+    ctrlDataBuf[END_OF_DC_DATA-1] = (fbits >> 1) & 0xff; // next 7 bits
+    ctrlDataBuf[END_OF_DC_DATA-2] = (fbits >> 9) & 0xff; // ...
+    ctrlDataBuf[END_OF_DC_DATA-3] = (fbits >> 17) & 0x01; // last 3 bits
 
 }
 
