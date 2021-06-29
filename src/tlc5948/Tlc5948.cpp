@@ -74,7 +74,7 @@ inline void copyBuf(void* inBuf, void* outBuf, unsigned int size) {
 }
 
 // send data from either ctrl buff or gs data buff and read TLC5948 data
-void Tlc5948::exchangeData(DataKind type, uint8_t numTlcs) {
+void Tlc5948::exchangeData(DataKind type, uint8_t numTlcs = 1) {
     SPI.beginTransaction(SPISettings(SPI_SPEED,BIT_ORDER,SPI_MODE));
     for (uint8_t i = 0; i < numTlcs; i++) {
         switch (type) {
@@ -82,35 +82,19 @@ void Tlc5948::exchangeData(DataKind type, uint8_t numTlcs) {
                 copyBuf(gsDataBuf,spiBuf,32);
                 //SPI.transfer(0x0);
 
-                noInterrupts();
-                SPCR &= ~_BV(SPE); // disable hw SPI
+                bitBangSpi0();
 
-                // Bit bang a '0'
-                PORTB &= 0b11110111; // set PB3/D11/MOSI low
-                PORTB |= 0b00100000; // set PB5/D13/SCLK high
-                PORTB &= 0b11011111; // set PB5/D13/SCLK low
-
-                
                 break;
             case DataKind::ctrldata:
                 copyBuf(ctrlDataBuf,spiBuf,32);
                 //SPI.transfer(0x1);
-
-                noInterrupts();
-                SPCR &= ~_BV(SPE); // disable hw SPI
-
-                // Bit bang a '1'
-                PORTB |= 0b00001000; // set PB3/D11/MOSI high
-                PORTB |= 0b00100000; // set PB5/D13/SCLK high
-                PORTB &= 0b11011111; // set PB5/D13/SCLK low
+                
+                bitBangSpi1();
 
                 break;
             default:
                 break;
         }
-
-        SPCR |= _BV(SPE); // restore hw SPI
-        interrupts();
 
         SPI.transfer(spiBuf,32);
     }
